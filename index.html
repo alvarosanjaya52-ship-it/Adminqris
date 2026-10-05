@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin QRIS</title>
+</head>
+<body style="font-family:sans-serif; padding:10px">
+<h3>Admin QRIS - Ciasem</h3>
+<input id="url" style="width:95%; padding:12px" placeholder="https://qris-backend-kamu.vercel.app">
+<button onclick="load()" style="width:100%; padding:12px; margin-top:8px; background:black; color:white">LOAD USER</button>
+<div id="list" style="margin-top:15px"></div>
+<script>
+async function load(){
+ let b=document.getElementById('url').value.replace(/\/$/,'');
+ localStorage.backend=b;
+ let r=await fetch(b+'/admin/list-users'); let d=await r.json();
+ let h='';
+ for(let id in d){
+  let u=d[id];
+  h+=`<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px">
+  <b>${u.nama}</b> (${id})<br>NIK:${u.nik}<br>Status:${u.status}<br>
+  ${u.ktp_url?`<a href="${u.ktp_url}" target="_blank">Lihat KTP</a> | <a href="${u.selfie_url}" target="_blank">Lihat Selfie</a>`:''}<br><br>
+  <button onclick="verif('${id}','APPROVE')" style="background:green;color:white;padding:8px">APPROVE</button>
+  <button onclick="verif('${id}','REJECT')" style="background:red;color:white;padding:8px">REJECT</button>
+  </div>`;
+ }
+ document.getElementById('list').innerHTML=h||'Kosong';
+}
+async function verif(id,act){
+ let b=localStorage.backend;
+ let alasan= act=='REJECT'?prompt('Alasan?'):'';
+ await fetch(b+'/admin/verifikasi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:id,action:act,alasan})});
+ alert(act+' sukses'); load();
+}
+document.getElementById('url').value=localStorage.backend||'';
+</script>
+</body>
+</html>
